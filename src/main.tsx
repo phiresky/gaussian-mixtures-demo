@@ -54,7 +54,7 @@ class Gauss {
         this.i12 = -b / determinant;
         this.i22 = a / determinant;
         this.i21 = -c / determinant;
-        this.factor = this.w / Math.sqrt(39.478417604357432 * determinant);
+        this.factor = this.w / Math.sqrt(4 * Math.PI**2 * determinant);
     }
 
     eval(x: number, y: number) {
