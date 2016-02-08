@@ -13,7 +13,7 @@ function raw(literals: any, ...placeholders: any[]) {
 }
 const xMin = -6, yMin = -6, xMax = 6, yMax = 6, step = 0.2;
 const gaussVarNames = "w,x,y,a,b,d".split(",");
-enum GaussVars { w,x,y,a,b,d }
+enum GaussVars { w, x, y, a, b, d }
 const gaussMin = [0, xMin, yMin, -6, -6, -6];
 const gaussMax = [2, xMax, yMax, 6, 6, 6];
 const defaultGausses = [
@@ -68,9 +68,9 @@ class GaussGui extends React.Component<{ onVariableChange: (inx: number, val: st
 	render() {
 		const s = this.state;
 		const vals = this.props.vals;
-		const invalid = (+vals[GaussVars.a]*+vals[GaussVars.d] - (+vals[GaussVars.b])**2) <= 0; // determinant ≤ 0
+		const invalid = (+vals[GaussVars.a] * +vals[GaussVars.d] - (+vals[GaussVars.b]) ** 2) <= 0; // determinant ≤ 0
 		return (
-			<div className={`row ${invalid?'alert-danger':''}`}>
+			<div className={`row ${invalid ? 'alert-danger' : ''}`}>
 				{vals.map((v, i) =>
 					<div key={i} className="col-sm-2"><label>{(i == 0 ? this.props.name : "") + " " + gaussVarNames[i] + " = "}
 						<input type="number" className="number" value={v + ""} onChange={ev => this.props.onVariableChange(i, (ev.target as any).value) } />
@@ -96,7 +96,7 @@ class Gui extends React.Component<{}, Config> {
 		gausses[i] = gausses[i].slice();
 		gausses[i][variable] = value;
 		this.gaussInstances[i] = new Gauss(gausses[i].map(v => +v));
-		
+
 		this.setState({ gausses });
 	}
 	onAddGauss() {
@@ -107,7 +107,7 @@ class Gui extends React.Component<{}, Config> {
 		this.setState({ gausses });
 	}
 	onRemoveGauss() {
-		if(this.state.gausses.length <= 1) return;
+		if (this.state.gausses.length <= 1) return;
 		this.gaussInstances.pop();
 		this.setState({ gausses: this.state.gausses.slice(0, this.state.gausses.length - 1) });
 	}
@@ -127,7 +127,6 @@ class Gui extends React.Component<{}, Config> {
 		)
 	}
 	componentDidMount() {
-		console.log(this.refs["plot"]);
 		Plotly.plot(this.refs["plot"], [], {
 			//autosize: true, doesn't work
 			width: 1000,
@@ -143,18 +142,27 @@ class Gui extends React.Component<{}, Config> {
 		this.componentDidUpdate(null, null);
 	}
 	componentDidUpdate(prevProps: {}, prevState: Config) {
-		const z: number[][] = [];
-		const xcoords: number[] = [], ycoords: number[] = [];
-		for (let y = yMin; y < yMax; y += step) {
-			ycoords.push(y);
-			const cur: number[] = [];
-			for (let x = xMin; x < xMax; x += step) {
-				xcoords.push(x);
-				cur.push(this.gaussInstances.map(g => g.eval(x, y)).reduce((a, b) => a + (isNaN(b)?0:b)));
-			}
-			z.push(cur);
-		}
 		const plot = this.refs["plot"] as any;
+		const xCount = (xMax - xMin) / step, yCount = (yMax - yMin) / step;
+		const z: number[][] = plot.data.z || new Array(yCount);
+		const xcoords: number[] = plot.data.x || new Array(xCount),
+			ycoords: number[] = plot.data.y || new Array(yCount);
+		let yi = 0, xi = 0;
+		for (let y = yMin; y < yMax; y += step) {
+			ycoords[yi] = y;
+			const cur: number[] = z[yi] || (z[yi] = new Array(xCount));
+			for (let x = xMin; x < xMax; x += step) {
+				xcoords[xi] = x;
+				let sum = 0;
+				for (const g of this.gaussInstances) {
+					const v = g.eval(x, y);
+					if (!isNaN(v)) sum += v;
+				}
+				cur.push(sum);
+				xi++;
+			}
+			yi++;
+		}
 		plot.data = [{
 			x: xcoords, y: ycoords, z,
 			type: 'surface'
