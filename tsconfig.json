@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "es5",
+		"outDir": "bin",
+		"watch": false,
+		"sourceMap": true,
+		"noImplicitAny": true,
+		"suppressImplicitAnyIndexErrors": true,
+		"module": "system",
+		"jsx": "react"
+	},
+	"files": [
+		"./lib/typings/browser.d.ts",
+		"./lib/plotly.d.ts",
+		"./src/main.tsx"
+	]
+}
