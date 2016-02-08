@@ -1,7 +1,8 @@
 all: bin/.git bin/index.html bin/main.js  bin/bundle.js
 
-bin/index.html: index-dist.html
+bin/index.html: index.html
 	cp $< $@
+	patch bin/index.html < src/index-dist.patch
 
 bin/main.js: src/main.tsx
 	tsc
