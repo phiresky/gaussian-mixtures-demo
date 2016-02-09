@@ -129,8 +129,8 @@ class Gui extends React.Component<{}, Config> {
 	componentDidMount() {
 		Plotly.plot(this.refs["plot"], [], {
 			//autosize: true, doesn't work
-			width: 1000,
-			height: 500,
+			width: 900,
+			height: 400,
 			scene: {
 				aspectmode: "manual",
 				aspectratio: { x: 1, y: 1, z: 0.3 },
