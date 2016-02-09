@@ -1,6 +1,8 @@
 # Gaussian Mixture Model Demo
 
-This demo runs completely client-side in the browser. The `index.html` file in the `gh-pages` branch is directly runnable. [A hosted version is available here](https://phiresky.github.io/gaussian-mixtures-demo/).
+This repository contains the gaussian mixture model (GMM) demonstration program for the lecture “Kognitive Systeme” at the [Interactive Systems Lab (ISL)](http://isl.anthropomatik.kit.edu/english/) at the [Karlsruhe Institute of Technology](https://kit.edu).
+
+The demo runs completely client-side in the browser. The `index.html` file in the `gh-pages` branch is directly runnable. [A hosted version is available here](https://phiresky.github.io/gaussian-mixtures-demo/).
 
 ## Building
 
