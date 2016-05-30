@@ -4,13 +4,25 @@
 <title>Gaussian Mixtures demo</title>
 <style>
 	.number {
-		width: 40px;
-		display: inline;
+		width: 50px;
+		font-family: KaTeX_Math;
+		font-size: 1.21em;
+		line-height: 1.2;
+	}
+	.negmargin {
+		margin-top: -1em;
+	}
+	.row {
+		margin-bottom: 1ex;
 	}
 	.slider {
 		display: inline;
 	}
+	.js-plotly-plot .plotly div.svg-container { margin: 0 auto; /** centering hack */}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.js"></script>
+
 <div class="container" id="reactContent"></div>
 <script src="jspm_packages/system.js"></script>
 <script src="config.js"></script>
