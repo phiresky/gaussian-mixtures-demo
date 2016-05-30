@@ -4,6 +4,7 @@ import 'bootstrap';
 import 'bootstrap/css/bootstrap.css!';
 import * as $ from "jquery";
 import Plotly from "plotly.js/dist/plotly";
+declare var katex: any;
 
 function raw(literals: any, ...placeholders: any[]) {
 	let result = "";
@@ -17,6 +18,7 @@ enum GaussVars { w, x, y, a, b, d }
 const gaussMin = [0, xMin, yMin, -6, -6, -6];
 const gaussMax = [2, xMax, yMax, 6, 6, 6];
 const defaultGausses = [
+	[1, 0, 0, 1, 0, 1],
 	[1.2, -2, 2, 1, 0, 3],
 	[1.5, 2, -2, 2.5, 3, 6],
 	[1.2, 2, 2, 1, 0, 3],
@@ -26,7 +28,7 @@ const defaultNewGauss = () => [0.5,
 	Math.random() * (xMax - xMin) + xMin,
 	Math.random() * (yMax - yMin) + yMin, 1, 0, 1].map(x => +x.toFixed(1));
 const defaultConfig = {
-	gausses: defaultGausses.slice(0, 2),
+	gausses: defaultGausses.slice(0, 1),
 	errors: [false, false]
 };
 type Config = typeof defaultConfig;
@@ -72,9 +74,9 @@ class GaussGui extends React.Component<{ onVariableChange: (inx: number, val: st
 		return (
 			<div className={`row ${invalid ? 'alert-danger' : ''}`}>
 				{vals.map((v, i) =>
-					<div key={i} className="col-sm-2"><label>{(i == 0 ? this.props.name : "") + " " + gaussVarNames[i] + " = "}
+					<div key={i} className="col-sm-2"><b>{(i == 0 ? this.props.name + " ": "")}</b>
+						<InlineMath math={`${gaussVarNames[i]} = `} />{" "}
 						<input type="number" className="number" value={v + ""} onChange={ev => this.props.onVariableChange(i, (ev.target as any).value) } />
-					</label>
 						<input type="range" className="slider" value={v + ""} step={0.1} min={gaussMin[i]} max={gaussMax[i]}
 							onChange={ev => this.props.onVariableChange(i, (ev.target as any).value) } />
 					</div>
@@ -83,6 +85,11 @@ class GaussGui extends React.Component<{ onVariableChange: (inx: number, val: st
 		);
 	}
 }
+const InlineMath = ({math = ""}) => 
+	<span dangerouslySetInnerHTML={{__html:katex.renderToString(math, {})}} />;
+const DisplayMath = ({math = ""}) => 
+	<div dangerouslySetInnerHTML={{__html:katex.renderToString(math, {displayMode:true})}} />;
+
 class Gui extends React.Component<{}, Config> {
 	leftGraph: any; rightGraph: any; foldGraph: any; slider: any;
 	gaussInstances: Gauss[];
@@ -115,9 +122,16 @@ class Gui extends React.Component<{}, Config> {
 		return (
 			<div>
 				<div className="page-header"><h1>Gaussian Mixtures demo</h1></div>
-				<div className="row" style={{ marginBottom: 10 }}>
-					<button className="btn btn-default" onClick={this.onAddGauss.bind(this) }>Add</button>{" "}
-					<button className="btn btn-default" onClick={this.onRemoveGauss.bind(this) }>Remove</button>
+				<div style={{ marginBottom: 10 }}>
+					<DisplayMath math={raw`
+					\begin{array}{lrl}
+						\text{Weight } & w_i \\
+						\text{Mean Vector } & \vec{\mu}_i & = \begin{pmatrix}x \\ y\end{pmatrix} \\
+						\text{Covariance Matrix } & \mathbf{\Sigma}_i & = \begin{pmatrix}a&b\\b&d\end{pmatrix}
+					\end{array}
+					`} />
+					<button className="btn btn-default negmargin" onClick={this.onAddGauss.bind(this) }>Add</button>{" "}
+					<button className="btn btn-default negmargin" onClick={this.onRemoveGauss.bind(this) }>Remove</button>
 				</div>
 				{this.state.gausses.map((gauss, i) => <GaussGui key={i} name={1 + i + "."} vals={gauss} onVariableChange={this.onChangeGauss.bind(this, i) } />) }
 				<hr />
