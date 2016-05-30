@@ -18,17 +18,14 @@ enum GaussVars { w, x, y, a, b, d }
 const gaussMin = [0, xMin, yMin, -6, -6, -6];
 const gaussMax = [2, xMax, yMax, 6, 6, 6];
 const defaultGausses = [
-	[1, 0, 0, 1, 0, 1],
-	[1.2, -2, 2, 1, 0, 3],
-	[1.5, 2, -2, 2.5, 3, 6],
-	[1.2, 2, 2, 1, 0, 3],
-	[1.5, -2, -2, 2.5, -3, 6],
+	[1, -2, 2, 1, 0, 1],
+	[1, 2, -2, 1, 0, 1]
 ];
-const defaultNewGauss = () => [0.5,
+const defaultNewGauss = () => [1,
 	Math.random() * (xMax - xMin) + xMin,
 	Math.random() * (yMax - yMin) + yMin, 1, 0, 1].map(x => +x.toFixed(1));
 const defaultConfig = {
-	gausses: defaultGausses.slice(0, 1),
+	gausses: defaultGausses.slice(0, 2),
 	errors: [false, false]
 };
 type Config = typeof defaultConfig;
