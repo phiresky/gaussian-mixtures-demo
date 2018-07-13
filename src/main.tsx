@@ -1,9 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import "bootstrap";
-import "bootstrap/css/bootstrap.css!";
-import * as $ from "jquery";
-import Plotly from "plotly.js/dist/plotly";
+import "bootstrap/dist/css/bootstrap.css";
+import * as Plotly from "plotly.js-gl3d-dist";
 declare var katex: any;
 
 function raw(literals: any, ...placeholders: any[]) {
