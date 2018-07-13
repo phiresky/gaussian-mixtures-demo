@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import 'bootstrap';
-import 'bootstrap/css/bootstrap.css!';
+import "bootstrap";
+import "bootstrap/css/bootstrap.css!";
 import * as $ from "jquery";
 import Plotly from "plotly.js/dist/plotly";
 declare var katex: any;
@@ -10,20 +10,34 @@ function raw(literals: any, ...placeholders: any[]) {
 	let result = "";
 	for (let i = 0; i < placeholders.length; i++)
 		result += literals.raw[i] + placeholders[i];
-    return result + literals.raw[literals.length - 1];
+	return result + literals.raw[literals.length - 1];
 }
-const xMin = -6, yMin = -6, xMax = 6, yMax = 6, step = 0.2;
+const xMin = -6,
+	yMin = -6,
+	xMax = 6,
+	yMax = 6,
+	step = 0.2;
 const gaussVarNames = "w,x,y,a,b,d".split(",");
-enum GaussVars { w, x, y, a, b, d }
+enum GaussVars {
+	w,
+	x,
+	y,
+	a,
+	b,
+	d
+}
 const gaussMin = [0, xMin, yMin, -6, -6, -6];
 const gaussMax = [2, xMax, yMax, 6, 6, 6];
-const defaultGausses = [
-	[1, -2, 2, 1, 0, 1],
-	[1, 2, -2, 1, 0, 1]
-];
-const defaultNewGauss = () => [1,
-	Math.random() * (xMax - xMin) + xMin,
-	Math.random() * (yMax - yMin) + yMin, 1, 0, 1].map(x => +x.toFixed(1));
+const defaultGausses = [[1, -2, 2, 1, 0, 1], [1, 2, -2, 1, 0, 1]];
+const defaultNewGauss = () =>
+	[
+		1,
+		Math.random() * (xMax - xMin) + xMin,
+		Math.random() * (yMax - yMin) + yMin,
+		1,
+		0,
+		1
+	].map(x => +x.toFixed(1));
 const defaultConfig = {
 	gausses: defaultGausses.slice(0, 2),
 	errors: [false, false]
@@ -33,62 +47,114 @@ type Config = typeof defaultConfig;
 class Gauss {
 	w: number;
 	x: number;
-    y: number;
-    a: number;
-    b: number;
-    c: number;
-    d: number;
-    i11: number;
-    i12: number;
-    i21: number;
-    i22: number;
-    factor: number;
+	y: number;
+	a: number;
+	b: number;
+	c: number;
+	d: number;
+	i11: number;
+	i12: number;
+	i21: number;
+	i22: number;
+	factor: number;
 	constructor(conf: number[]) {
 		[this.w, this.x, this.y, this.a, this.b, this.d] = conf;
 		this.c = this.b;
-		const a = this.a, b = this.b, c = this.c, d = this.d;
+		const a = this.a,
+			b = this.b,
+			c = this.c,
+			d = this.d;
 
-        const determinant = a * d - c * b;
-        this.i11 = d / determinant;
-        this.i12 = -b / determinant;
-        this.i22 = a / determinant;
-        this.i21 = -c / determinant;
-        this.factor = this.w / Math.sqrt(4 * Math.PI**2 * determinant);
-    }
+		const determinant = a * d - c * b;
+		this.i11 = d / determinant;
+		this.i12 = -b / determinant;
+		this.i22 = a / determinant;
+		this.i21 = -c / determinant;
+		this.factor = this.w / Math.sqrt(4 * Math.PI ** 2 * determinant);
+	}
 
-    eval(x: number, y: number) {
-        const dx = x - this.x;
-        const dy = y - this.y;
-        const d = -0.5 * (dx * dx * this.i11 + dx * dy * this.i12 + dy * dx * this.i21 + dy * dy * this.i22);
-        return this.factor * Math.exp(d);
-    }
+	eval(x: number, y: number) {
+		const dx = x - this.x;
+		const dy = y - this.y;
+		const d =
+			-0.5 *
+			(dx * dx * this.i11 +
+				dx * dy * this.i12 +
+				dy * dx * this.i21 +
+				dy * dy * this.i22);
+		return this.factor * Math.exp(d);
+	}
 }
-class GaussGui extends React.Component<{ onVariableChange: (inx: number, val: string) => void, vals: (number | string)[], name: string }, {}> {
+class GaussGui extends React.Component<
+	{
+		onVariableChange: (inx: number, val: string) => void;
+		vals: (number | string)[];
+		name: string;
+	},
+	{}
+> {
 	render() {
 		const s = this.state;
 		const vals = this.props.vals;
-		const invalid = (+vals[GaussVars.a] * +vals[GaussVars.d] - (+vals[GaussVars.b]) ** 2) <= 0; // determinant ≤ 0
+		const invalid =
+			+vals[GaussVars.a] * +vals[GaussVars.d] -
+				(+vals[GaussVars.b]) ** 2 <=
+			0; // determinant ≤ 0
 		return (
-			<div className={`row ${invalid ? 'alert-danger' : ''}`}>
-				{vals.map((v, i) =>
-					<div key={i} className="col-sm-2"><b>{(i == 0 ? this.props.name + " ": "")}</b>
+			<div className={`row ${invalid ? "alert-danger" : ""}`}>
+				{vals.map((v, i) => (
+					<div key={i} className="col-sm-2">
+						<b>{i == 0 ? this.props.name + " " : ""}</b>
 						<InlineMath math={`${gaussVarNames[i]} = `} />{" "}
-						<input type="number" className="number" value={v + ""} onChange={ev => this.props.onVariableChange(i, (ev.target as any).value) } />
-						<input type="range" className="slider" value={v + ""} step={0.1} min={gaussMin[i]} max={gaussMax[i]}
-							onChange={ev => this.props.onVariableChange(i, (ev.target as any).value) } />
+						<input
+							type="number"
+							className="number"
+							value={v + ""}
+							onChange={ev =>
+								this.props.onVariableChange(
+									i,
+									(ev.target as any).value
+								)
+							}
+						/>
+						<input
+							type="range"
+							className="slider"
+							value={v + ""}
+							step={0.1}
+							min={gaussMin[i]}
+							max={gaussMax[i]}
+							onChange={ev =>
+								this.props.onVariableChange(
+									i,
+									(ev.target as any).value
+								)
+							}
+						/>
 					</div>
-				) }
+				))}
 			</div>
 		);
 	}
 }
-const InlineMath = ({math = ""}) => 
-	<span dangerouslySetInnerHTML={{__html:katex.renderToString(math, {})}} />;
-const DisplayMath = ({math = ""}) => 
-	<div dangerouslySetInnerHTML={{__html:katex.renderToString(math, {displayMode:true})}} />;
+const InlineMath = ({ math = "" }) => (
+	<span
+		dangerouslySetInnerHTML={{ __html: katex.renderToString(math, {}) }}
+	/>
+);
+const DisplayMath = ({ math = "" }) => (
+	<div
+		dangerouslySetInnerHTML={{
+			__html: katex.renderToString(math, { displayMode: true })
+		}}
+	/>
+);
 
 class Gui extends React.Component<{}, Config> {
-	leftGraph: any; rightGraph: any; foldGraph: any; slider: any;
+	leftGraph: any;
+	rightGraph: any;
+	foldGraph: any;
+	slider: any;
 	gaussInstances: Gauss[];
 	constructor(props: {}) {
 		super(props);
@@ -113,52 +179,91 @@ class Gui extends React.Component<{}, Config> {
 	onRemoveGauss() {
 		if (this.state.gausses.length <= 1) return;
 		this.gaussInstances.pop();
-		this.setState({ gausses: this.state.gausses.slice(0, this.state.gausses.length - 1) });
+		this.setState({
+			gausses: this.state.gausses.slice(0, this.state.gausses.length - 1)
+		});
 	}
 	render() {
 		return (
 			<div>
-				<div className="page-header"><h1>Gaussian Mixtures demo</h1></div>
+				<div className="page-header">
+					<h1>Gaussian Mixtures demo</h1>
+				</div>
 				<div style={{ marginBottom: 10 }}>
-					<DisplayMath math={raw`
+					<DisplayMath
+						math={raw`
 					\begin{array}{lrl}
 						\text{Weight } & w_i \\
 						\text{Mean Vector } & \vec{\mu}_i & = \begin{pmatrix}x \\ y\end{pmatrix} \\
 						\text{Covariance Matrix } & \mathbf{\Sigma}_i & = \begin{pmatrix}a&b\\b&d\end{pmatrix}
 					\end{array}
-					`} />
-					<button className="btn btn-default negmargin" onClick={this.onAddGauss.bind(this) }>Add</button>{" "}
-					<button className="btn btn-default negmargin" onClick={this.onRemoveGauss.bind(this) }>Remove</button>
+					`}
+					/>
+					<button
+						className="btn btn-default negmargin"
+						onClick={this.onAddGauss.bind(this)}
+					>
+						Add
+					</button>{" "}
+					<button
+						className="btn btn-default negmargin"
+						onClick={this.onRemoveGauss.bind(this)}
+					>
+						Remove
+					</button>
 				</div>
-				{this.state.gausses.map((gauss, i) => <GaussGui key={i} name={1 + i + "."} vals={gauss} onVariableChange={this.onChangeGauss.bind(this, i) } />) }
+				{this.state.gausses.map((gauss, i) => (
+					<GaussGui
+						key={i}
+						name={1 + i + "."}
+						vals={gauss}
+						onVariableChange={this.onChangeGauss.bind(this, i)}
+					/>
+				))}
 				<hr />
 				<div ref="plot" />
-				<footer><small><a href="https://github.com/phiresky/gaussian-mixtures-demo">Source on GitHub</a></small></footer>
+				<footer>
+					<small>
+						<a href="https://github.com/phiresky/gaussian-mixtures-demo">
+							Source on GitHub
+						</a>
+					</small>
+				</footer>
 			</div>
-		)
+		);
 	}
 	componentDidMount() {
-		Plotly.plot(this.refs["plot"], [], {
-			//autosize: true, doesn't work
-			width: 900,
-			height: 400,
-			scene: {
-				aspectmode: "manual",
-				aspectratio: { x: 1, y: 1, z: 0.3 },
-				zaxis: { range: [0, 0.2] },
-				camera: { eye: { y: 1, x: 1, z: 0.6 }, center: { x: 0, y: 0, z: -0.2 } }
+		Plotly.plot(
+			this.refs["plot"],
+			[],
+			{
+				//autosize: true, doesn't work
+				width: 900,
+				height: 400,
+				scene: {
+					aspectmode: "manual",
+					aspectratio: { x: 1, y: 1, z: 0.3 },
+					zaxis: { range: [0, 0.2] },
+					camera: {
+						eye: { y: 1, x: 1, z: 0.6 },
+						center: { x: 0, y: 0, z: -0.2 }
+					}
+				},
+				margin: { l: 0, r: 0, b: 0, t: 0 }
 			},
-			margin: { l: 0, r: 0, b: 0, t: 0 }
-		}, { displayModeBar: false });
+			{ displayModeBar: false }
+		);
 		this.componentDidUpdate(null, null);
 	}
 	componentDidUpdate(prevProps: {}, prevState: Config) {
 		const plot = this.refs["plot"] as any;
-		const xCount = (xMax - xMin) / step, yCount = (yMax - yMin) / step;
+		const xCount = (xMax - xMin) / step,
+			yCount = (yMax - yMin) / step;
 		const z: number[][] = plot.data.z || new Array(yCount);
 		const xcoords: number[] = plot.data.x || new Array(xCount),
 			ycoords: number[] = plot.data.y || new Array(yCount);
-		let yi = 0, xi = 0;
+		let yi = 0,
+			xi = 0;
 		for (let y = yMin; y < yMax; y += step) {
 			ycoords[yi] = y;
 			const cur: number[] = z[yi] || (z[yi] = new Array(xCount));
@@ -174,12 +279,19 @@ class Gui extends React.Component<{}, Config> {
 			}
 			yi++;
 		}
-		plot.data = [{
-			x: xcoords, y: ycoords, z,
-			type: 'surface'
-		}];
+		plot.data = [
+			{
+				x: xcoords,
+				y: ycoords,
+				z,
+				type: "surface"
+			}
+		];
 		Plotly.redraw(plot);
 	}
 }
 
-(window as any).gui = ReactDOM.render(<Gui/>, document.getElementById("reactContent"));
+(window as any).gui = ReactDOM.render(
+	<Gui />,
+	document.getElementById("reactContent")
+);
